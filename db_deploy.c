@@ -7,7 +7,7 @@
 #include <unistd.h> // sleep()
 // #define K 6 // database num
 #define slot_num 44
-#define fname_len 10
+#define fname_len 20
 #define maxnum 66
 #define maxdist 0x3f3f3f3f
 #define MAX 1024 // 从文件中读取的数据最大长度

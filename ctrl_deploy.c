@@ -6,7 +6,7 @@
 // #define K 7 // controller num
 #define slot_num 44
 // #define fname "test_0"
-#define fname_len 18
+#define fname_len 20
 #define maxnum 66
 #define maxdist 0x3f3f3f3f
 
