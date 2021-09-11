@@ -302,6 +302,20 @@ int cal(int K, int fnum)
    }
    fclose(fp);
 
+   // 写入主控制器
+   snprintf(fname, fname_len, "active_ctrl_%d", fnum);
+   if((fp=fopen(fname,"w"))==NULL)
+   {
+      printf("打开文件%s错误\n", fname);
+      return -1;
+   }
+   fprintf(fp, "%d\n", num);
+   for(i = 0; i < num; i++)
+   {
+      fprintf(fp, "%d ", center[map[i]]);
+   }
+   fclose(fp);
+
    // 遍历选取备份控制器
    snprintf(fname, fname_len, "standby_ctrl_%d", fnum);
    if((fp=fopen(fname,"w"))==NULL)
