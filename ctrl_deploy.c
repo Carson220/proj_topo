@@ -1,4 +1,6 @@
 // 考虑单个时间片，按距离聚类部署SDN控制器
+// 不再需要选取SDN控制器的部署位置，每个卫星交换机上都部署一个SDN控制器
+// 主控制器序号就是卫星节点序号，不再需要设置备用控制器
 
 #include <stdio.h>
 #include <string.h>
@@ -364,27 +366,54 @@ int cal(int K, int fnum)
 
 int main()
 {
-   int K, fnum = 0;
-   for(fnum = 0; fnum < slot_num; fnum++)
+   // int K, fnum = 0;
+   // for(fnum = 0; fnum < slot_num; fnum++)
+   // {
+   //    // printf("test_%d ", fnum);
+   //    for(K = 1; K <= maxnum; K++)
+   //    {
+   //       // printf("%d ", cv(K, fnum));
+   //    }
+   //    // printf("\n");
+   // }
+
+   // int ctrl_num[slot_num] = { 7, 7, 7, 7, 7, 5, 5, 5, 5, 7, 7, \
+   //                            5, 7, 7, 5, 5, 5, 7, 7, 5, 5, 5, \
+   //                            7, 7, 7, 7, 7, 5, 5, 5, 5, 7, 7, \
+   //                            7, 7, 7, 7, 5, 5, 7, 7, 5, 5, 5  \
+   // }; // 记录每个时间片的控制器数量（手动选取）
+
+   // for(fnum = 0; fnum < slot_num; fnum++)
+   // {
+   //    cal(ctrl_num[fnum], fnum);
+   // }
+
+   FILE *fp = NULL;
+   char fname[fname_len] = {0,};
+   int num = 0;
+   int i = 0;
+
+   snprintf(fname, fname_len, "test_0");
+   if((fp=fopen(fname,"r"))==NULL)
    {
-      // printf("test_%d ", fnum);
-      for(K = 1; K <= maxnum; K++)
-      {
-         // printf("%d ", cv(K, fnum));
-      }
-      // printf("\n");
+      printf("打开文件%s错误\n", fname);
+      return -1;
    }
+   fscanf(fp, "%d", &num);
+   fclose(fp);
 
-   int ctrl_num[slot_num] = { 7, 7, 7, 7, 7, 5, 5, 5, 5, 7, 7, \
-                              5, 7, 7, 5, 5, 5, 7, 7, 5, 5, 5, \
-                              7, 7, 7, 7, 7, 5, 5, 5, 5, 7, 7, \
-                              7, 7, 7, 7, 5, 5, 7, 7, 5, 5, 5  \
-   }; // 记录每个时间片的控制器数量（手动选取）
-
-   for(fnum = 0; fnum < slot_num; fnum++)
+   snprintf(fname, fname_len, "ctrl");
+   if((fp=fopen(fname,"w"))==NULL)
    {
-      cal(ctrl_num[fnum], fnum);
+      printf("打开文件%s错误\n", fname);
+      return -1;
    }
-
+   fprintf(fp, "%d\n", num);
+   for(i = 0; i < num; i++)
+   {
+      fprintf(fp, "%d ", i);
+   }
+   fclose(fp);
+   
    return 0;
 }
