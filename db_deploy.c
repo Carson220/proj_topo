@@ -34,8 +34,19 @@ int cv(int db_num)
     int alter_location[maxnum]; // 标记备选中心节点 alter_location[0~65] = 0/1
     int alter_node[maxnum+1]; // 记录备选中心节点 alter_node[1~66] = 0~65
 
-    int ctrl_flag[slot_num][maxnum]; // 标记控制器部署位置 ctrl_flag[0~65] = 0/1
-    int ctrl_num[slot_num] = {0,}; // 记录每个时间片的控制器数量
+    int ctrl_flag[maxnum]; // 标记控制器部署位置 ctrl_flag[0~65] = 0/1
+    int ctrl_num = 0; // 记录控制器数量
+
+    int i, j, k, m, n = 0;
+    int alter_num = 0; // 记录备选中心节点个数
+    int center_num = 0; // 记录中心节点个数
+    char buffer[MAX] = {0, }; // 存储从文件中读取的数据
+
+    int cost[slot_num][maxnum][maxnum+1]; // 记录对于时间片m节点i，删除备选中心节点k之后增加的代价 cost[m][i][k]
+    int funval[maxnum+1]; // 记录删除备选中心节点k之后增加的总代价 funval[k]
+    int minval = maxdist;
+    int minnode = 0;
+    int flag[maxnum]; // 0-exist 1-deleted
 
     memset(mindist, 0x3f, sizeof(mindist));
     memset(map, 0, sizeof(map));
@@ -46,17 +57,9 @@ int cv(int db_num)
     memset(alter_location, 0, sizeof(alter_location));
     memset(alter_node, 0, sizeof(alter_node));
     memset(ctrl_flag, 0, sizeof(ctrl_flag));
-
-    int i, j, k, m, n = 0;
-    int alter_num = 0; // 记录备选中心节点个数
-    int center_num = 0; // 记录中心节点个数
-    char buffer[MAX] = {0, }; // 存储从文件中读取的数据
-
-    int cost[slot_num][maxnum][maxnum] = {0,}; // 记录对于时间片m节点i，删除备选中心节点k之后增加的代价 cost[m][i][k]
-    int funval[maxnum] = {0,}; // 记录删除备选中心节点k之后增加的总代价 funval[k]
-    int minval = maxdist;
-    int minnode = 0;
-    int flag[maxnum] = {0,}; // 0-exist 1-deleted
+    memset(cost, 0, sizeof(cost));
+    memset(funval, 0, sizeof(funval));
+    memset(flag, 0, sizeof(flag));
 
     // 选取数据库部署备选位置
     for(m = 0; m < slot_num; m++)
@@ -110,27 +113,29 @@ int cv(int db_num)
         // }
 
         // 读取控制器部署信息
-        snprintf(fname, fname_len, "ctrl_%d", m);
+        // snprintf(fname, fname_len, "ctrl_%d", m);
+        // if((fp=fopen(fname,"r"))==NULL)
+        // {
+        //     printf("打开文件%s错误\n", fname);
+        //     return -1;
+        // }
+        // fscanf(fp, "%d", &ctrl_num[m]);
+        // printf("ctrl_num[%d]=%d\n", m, ctrl_num[m]);
+        snprintf(fname, fname_len, "ctrl");
         if((fp=fopen(fname,"r"))==NULL)
         {
             printf("打开文件%s错误\n", fname);
             return -1;
         }
-        fscanf(fp, "%d", &ctrl_num[m]);
-        // printf("ctrl_num[%d]=%d\n", m, ctrl_num[m]);
+        fscanf(fp, "%d", &ctrl_num);
 
         k = 1;
         while(!feof(fp))
         {
-            fscanf(fp, "%d\n", &i);
-            // printf("center=%d\n", i);
-            ctrl_flag[m][i] = 1;
-            // 优先选取控制器所在位置作为中心点
-            // center[m][k] = i;
-            // center_temp[m][k] = i;
-            // center_flag[m][i] = 1;
-            // k++;
-            fgets(buffer , MAX , fp);
+            fscanf(fp, "%d", &i);
+            // printf("ctrl_%d=%d\n", i, i);
+            ctrl_flag[i] = 1;
+            // fgets(buffer , MAX , fp);
         }
         // printf("\n");
         fclose(fp);
@@ -138,10 +143,8 @@ int cv(int db_num)
         // K-means 聚类
         // 随机选取中心点
         srand((unsigned)time(NULL)); 
-        if(K < ctrl_num[m])
-            center_num = ctrl_num[m];
-        else
-            center_num = K;
+        center_num = K;
+        
         for(; k <= center_num; k++)
         {
             i = rand() % num;
@@ -178,7 +181,7 @@ int cv(int db_num)
                 dist_temp = 0; // 记录到同一个簇其余（控制器）点的最短距离之和
                 for(j = 0; j < num; j++)
                 {
-                    if(map[m][i] == map[m][j] && ctrl_flag[m][j] == 1)
+                    if(map[m][i] == map[m][j] && ctrl_flag[j] == 1)
                     {
                         dist_temp += matrix[m][i][j];
                     }
@@ -230,7 +233,7 @@ int cv(int db_num)
     {
         for(i = 0; i < num; i++)
         {
-            dist_temp = maxdist; // 记录每个点到各个中心点的最小距离
+            dist_temp = maxdist; // 记录每个点到各个备选中心点的最小距离
             for(k = 1; k <= alter_num; k++)
             {
                 if(matrix[m][i][alter_node[k]] < dist_temp)
@@ -240,7 +243,7 @@ int cv(int db_num)
                     // printf("map[%d][%d] = %d\n", m, i, k);
                 }
             }
-            if(ctrl_flag[m][i] == 1)
+            if(ctrl_flag[i] == 1)
                 dist_sum += dist_temp;
         }
     }
@@ -257,7 +260,7 @@ int cv(int db_num)
             {
                 for(i = 0; i < num; i++)
                 {
-                    if(map[m][i] == k && ctrl_flag[m][i] == 1)
+                    if(map[m][i] == k && ctrl_flag[i] == 1)
                     {
                         cost[m][i][k] -= matrix[m][i][alter_node[k]];
                         // printf("matrix[%d][%d][alter_node[%d](%d)] = %d\n", m, i, k, alter_node[k], matrix[m][i][alter_node[k]]);
@@ -284,6 +287,7 @@ int cv(int db_num)
         }
         // 选取代价最小的节点删除
         minval = maxdist;
+        minnode = 0;
         for(k = 1; k <= alter_num; k++)
         {
             if(funval[k] < minval && flag[k] != 1)
@@ -295,7 +299,28 @@ int cv(int db_num)
         dist_sum += minval;
         flag[minnode] = 1;
         // printf("del %d\n", alter_node[minnode]);
-        // alter_num--;
+        for(m = 0; m < slot_num; m++)
+        {
+            for(i = 0; i < num; i++)
+            {
+                if(map[m][i] == minnode && ctrl_flag[i] == 1)
+                {
+                    dist_temp = maxdist; // 记录到各个中心点的最小距离
+                    k = 0;
+                    for(j = 1; j <= alter_num; j++)
+                    {
+                        if(matrix[m][i][alter_node[j]] < dist_temp && flag[j] != 1)
+                        {
+                            dist_temp = matrix[m][i][alter_node[j]];
+                            k = j;
+                            // printf("map[%d][%d] = %d\n", m, i, minnode);
+                            // printf("center = alter_node[%d] = %d\n", j, alter_node[j]);
+                        }
+                    }
+                    map[m][i] = k;
+                }
+            }
+        }
     }
 
     // printf("中心节点：");
@@ -333,8 +358,19 @@ int cal(int db_num)
     int alter_location[maxnum]; // 标记备选中心节点 alter_location[0~65] = 0/1
     int alter_node[maxnum+1]; // 记录备选中心节点 alter_node[1~66] = 0~65
 
-    int ctrl_flag[slot_num][maxnum]; // 标记控制器部署位置 ctrl_flag[0~65] = 0/1
-    int ctrl_num[slot_num] = {0,}; // 记录每个时间片的控制器数量
+    int ctrl_flag[maxnum]; // 标记控制器部署位置 ctrl_flag[0~65] = 0/1
+    int ctrl_num = 0; // 记录控制器数量
+
+    int i, j, k, m, n = 0;
+    int alter_num = 0; // 记录备选中心节点个数
+    int center_num = 0; // 记录中心节点个数
+    char buffer[MAX] = {0, }; // 存储从文件中读取的数据
+
+    int cost[slot_num][maxnum][maxnum+1]; // 记录对于时间片m节点i，删除备选中心节点k之后增加的代价 cost[m][i][k]
+    int funval[maxnum+1]; // 记录删除备选中心节点k之后增加的总代价 funval[k]
+    int minval = maxdist;
+    int minnode = 0;
+    int flag[maxnum]; // 0-exist 1-deleted
 
     memset(mindist, 0x3f, sizeof(mindist));
     memset(map, 0, sizeof(map));
@@ -345,17 +381,9 @@ int cal(int db_num)
     memset(alter_location, 0, sizeof(alter_location));
     memset(alter_node, 0, sizeof(alter_node));
     memset(ctrl_flag, 0, sizeof(ctrl_flag));
-
-    int i, j, k, m, n = 0;
-    int alter_num = 0; // 记录备选中心节点个数
-    int center_num = 0; // 记录中心节点个数
-    char buffer[MAX] = {0, }; // 存储从文件中读取的数据
-
-    int cost[slot_num][maxnum][maxnum] = {0,}; // 记录对于时间片m节点i，删除备选中心节点k之后增加的代价 cost[m][i][k]
-    int funval[maxnum] = {0,}; // 记录删除备选中心节点k之后增加的总代价 funval[k]
-    int minval = maxdist;
-    int minnode = 0;
-    int flag[maxnum] = {0,}; // 0-exist 1-deleted
+    memset(cost, 0, sizeof(cost));
+    memset(funval, 0, sizeof(funval));
+    memset(flag, 0, sizeof(flag));
 
     // 选取数据库部署备选位置
     for(m = 0; m < slot_num; m++)
@@ -409,27 +437,29 @@ int cal(int db_num)
         // }
 
         // 读取控制器部署信息
-        snprintf(fname, fname_len, "ctrl_%d", m);
+        // snprintf(fname, fname_len, "ctrl_%d", m);
+        // if((fp=fopen(fname,"r"))==NULL)
+        // {
+        //     printf("打开文件%s错误\n", fname);
+        //     return -1;
+        // }
+        // fscanf(fp, "%d", &ctrl_num[m]);
+        // printf("ctrl_num[%d]=%d\n", m, ctrl_num[m]);
+        snprintf(fname, fname_len, "ctrl");
         if((fp=fopen(fname,"r"))==NULL)
         {
             printf("打开文件%s错误\n", fname);
             return -1;
         }
-        fscanf(fp, "%d", &ctrl_num[m]);
-        // printf("ctrl_num[%d]=%d\n", m, ctrl_num[m]);
+        fscanf(fp, "%d", &ctrl_num);
 
         k = 1;
         while(!feof(fp))
         {
-            fscanf(fp, "%d\n", &i);
-            // printf("center=%d\n", i);
-            ctrl_flag[m][i] = 1;
-            // 优先选取控制器所在位置作为中心点
-            // center[m][k] = i;
-            // center_temp[m][k] = i;
-            // center_flag[m][i] = 1;
-            // k++;
-            fgets(buffer , MAX , fp);
+            fscanf(fp, "%d", &i);
+            // printf("ctrl_%d=%d\n", i, i);
+            ctrl_flag[i] = 1;
+            // fgets(buffer , MAX , fp);
         }
         // printf("\n");
         fclose(fp);
@@ -437,10 +467,8 @@ int cal(int db_num)
         // K-means 聚类
         // 随机选取中心点
         srand((unsigned)time(NULL)); 
-        if(K < ctrl_num[m])
-            center_num = ctrl_num[m];
-        else
-            center_num = K;
+        center_num = K;
+
         for(; k <= center_num; k++)
         {
             i = rand() % num;
@@ -477,7 +505,7 @@ int cal(int db_num)
                 dist_temp = 0; // 记录到同一个簇其余（控制器）点的最短距离之和
                 for(j = 0; j < num; j++)
                 {
-                    if(map[m][i] == map[m][j] && ctrl_flag[m][j] == 1)
+                    if(map[m][i] == map[m][j] && ctrl_flag[j] == 1)
                     {
                         dist_temp += matrix[m][i][j];
                     }
@@ -539,7 +567,7 @@ int cal(int db_num)
                     // printf("map[%d][%d] = %d\n", m, i, k);
                 }
             }
-            if(ctrl_flag[m][i] == 1)
+            if(ctrl_flag[i] == 1)
                 dist_sum += dist_temp;
         }
     }
@@ -556,7 +584,7 @@ int cal(int db_num)
             {
                 for(i = 0; i < num; i++)
                 {
-                    if(map[m][i] == k && ctrl_flag[m][i] == 1)
+                    if(map[m][i] == k && ctrl_flag[i] == 1)
                     {
                         cost[m][i][k] -= matrix[m][i][alter_node[k]];
                         // printf("matrix[%d][%d][alter_node[%d](%d)] = %d\n", m, i, k, alter_node[k], matrix[m][i][alter_node[k]]);
@@ -598,7 +626,7 @@ int cal(int db_num)
         {
             for(i = 0; i < num; i++)
             {
-                if(map[m][i] == minnode && ctrl_flag[m][i] == 1)
+                if(map[m][i] == minnode && ctrl_flag[i] == 1)
                 {
                     dist_temp = maxdist; // 记录到各个中心点的最小距离
                     k = 0;
@@ -614,7 +642,6 @@ int cal(int db_num)
                 }
             }
         }
-        // alter_num--;
     }
 
     // printf("K = %d, dist_sum = %d\n", K, dist_sum);
@@ -662,7 +689,7 @@ int cal(int db_num)
                 fprintf(fp, "%d\n ", alter_node[k]);
                 for(i = 0; i < num; i++)
                 {
-                    if(map[fnum][i] == k && ctrl_flag[fnum][i] == 1)
+                    if(map[fnum][i] == k && ctrl_flag[i] == 1)
                     {
                         fprintf(fp, "%d ", i);
                     }
