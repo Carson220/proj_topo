@@ -57,10 +57,10 @@ int cal(int fnum)
     {
         fscanf(fp, "%d %d %f", &node1, &node2, &dist);
         //printf("%d %d %f\n", node1, node2, dist);
-        // matrix[node1][node2] = (int)(dist*1e5); // 把浮点数化作整数存储
-        // matrix[node2][node1] = (int)(dist*1e5);
-        matrix[node1][node2] = 1;
-        matrix[node2][node1] = 1;
+        matrix[node1][node2] = (int)(dist*1e5); // 把浮点数化作整数存储
+        matrix[node2][node1] = (int)(dist*1e5);
+        // matrix[node1][node2] = 1;
+        // matrix[node2][node1] = 1;
     }
     fclose(fp);
     for(i = 0; i < num; i++)
@@ -94,39 +94,39 @@ int cal(int fnum)
     //    }
     // }
 
-    snprintf(fname, fname_len, "s2s_%d", fnum);
-    if((fp=fopen(fname,"w"))==NULL)
-    {
-        printf("打开文件%s错误\n", fname);
-        return -1;
-    }
-    for(i = 0; i < num; i++)
-    {
-       fprintf(fp, "%d\n", i);
-       for(j = 0; j < num; j++)
-       {
-            if(i != j)
-            {
-                // s2s route
-                // printf("sw%d<->sw%d route: ", i, j);
-                fprintf(fp, "%d %d ", i, j);
-                hop = 0;
-                nextsw[hop++] = i;
-                // printf("%d ", i);
-                out(i, j);
-                nextsw[hop] = j;
-                // printf("%d ", j);
+    // snprintf(fname, fname_len, "s2s_%d", fnum);
+    // if((fp=fopen(fname,"w"))==NULL)
+    // {
+    //     printf("打开文件%s错误\n", fname);
+    //     return -1;
+    // }
+    // for(i = 0; i < num; i++)
+    // {
+    //    fprintf(fp, "%d\n", i);
+    //    for(j = 0; j < num; j++)
+    //    {
+    //         if(i != j)
+    //         {
+    //             // s2s route
+    //             // printf("sw%d<->sw%d route: ", i, j);
+    //             fprintf(fp, "%d %d ", i, j);
+    //             hop = 0;
+    //             nextsw[hop++] = i;
+    //             // printf("%d ", i);
+    //             out(i, j);
+    //             nextsw[hop] = j;
+    //             // printf("%d ", j);
 
-                for(k = 0; k < hop; k++)
-                {
-                    // printf("sw%d-outport%d ", nextsw[k], nextsw[k+1]);
-                    fprintf(fp, "%03d%03d ", nextsw[k], nextsw[k+1]);
-                }
-                fprintf(fp, "\n");
-            }
-       }
-    }
-    fclose(fp);
+    //             for(k = 0; k < hop; k++)
+    //             {
+    //                 // printf("sw%d-outport%d ", nextsw[k], nextsw[k+1]);
+    //                 fprintf(fp, "%03d%03d ", nextsw[k], nextsw[k+1]);
+    //             }
+    //             fprintf(fp, "\n");
+    //         }
+    //    }
+    // }
+    // fclose(fp);
 
     // snprintf(fname, fname_len, "ctrl_%d", fnum);
     // if((fp1=fopen(fname,"r"))==NULL)
@@ -222,119 +222,161 @@ int cal(int fnum)
     // fclose(fp2);
     // fclose(fp);
 
-    // snprintf(fname, fname_len, "db");
-    // if((fp=fopen(fname,"r"))==NULL)
-    // {
-    //     printf("打开文件%s错误\n", fname);
-    //     return -1;
-    // }
-    // fscanf(fp, "%d", &db_num);
-    // snprintf(fname, fname_len, "db_%d", fnum);
-    // if((fp1=fopen(fname,"r"))==NULL)
-    // {
-    //     printf("打开文件%s错误\n", fname);
-    //     return -1;
-    // }
-    // snprintf(fname, fname_len, "c2d_%d", fnum);
-    // if((fp2=fopen(fname,"w"))==NULL)
-    // {
-    //     printf("打开文件%s错误\n", fname);
-    //     return -1;
-    // }
-    // for(k = 0; k < db_num; k++)
-    // {
-    //     fscanf(fp1, "%d", &i);
-    //     fgetc(fp1); // read '\n'
-    //     while(fgetc(fp1) == ' ')
-    //     {
-    //         fscanf(fp1, "%d", &j);
+    snprintf(fname, fname_len, "db");
+    if((fp=fopen(fname,"r"))==NULL)
+    {
+        printf("打开文件%s错误\n", fname);
+        return -1;
+    }
+    fscanf(fp, "%d", &db_num);
+    snprintf(fname, fname_len, "db_%d", fnum);
+    if((fp1=fopen(fname,"r"))==NULL)
+    {
+        printf("打开文件%s错误\n", fname);
+        return -1;
+    }
+    snprintf(fname, fname_len, "c2d_%d", fnum);
+    if((fp2=fopen(fname,"w"))==NULL)
+    {
+        printf("打开文件%s错误\n", fname);
+        return -1;
+    }
+    for(k = 0; k < db_num; k++)
+    {
+        fscanf(fp1, "%d", &i);
+        fgetc(fp1); // read '\n'
+        while(fgetc(fp1) == ' ')
+        {
+            fscanf(fp1, "%d", &j);
 
-    //         // slot_k ctrl_j conf
-    //         snprintf(fname, fname_len, "slot_%d_ctrl_%d", fnum, j);
-    //         if((fp3=fopen(fname,"w"))==NULL)
-    //         {
-    //             printf("打开文件%s错误\n", fname);
-    //             return -1;
-    //         }
-    //         fprintf(fp3, "%d\n%d\n%d\n", fnum, j+1, i+1);
-    //         fclose(fp3);
-    //         // printf("slot = %d, ctrl = %d, db = %d\n", fnum, j, i);
+            // slot_k ctrl_j conf
+            // snprintf(fname, fname_len, "slot_%d_ctrl_%d", fnum, j);
+            // if((fp3=fopen(fname,"w"))==NULL)
+            // {
+            //     printf("打开文件%s错误\n", fname);
+            //     return -1;
+            // }
+            // fprintf(fp3, "%d\n%d\n%d\n", fnum, j+1, i+1);
+            // fclose(fp3);
+            // printf("slot = %d, ctrl = %d, db = %d\n", fnum, j, i);
 
-    //         if(i != j)
-    //         {
-    //             // d2c route
-    //             fprintf(fp2, "%d %d ", i, j);
-    //             hop = 0;
-    //             nextsw[hop++] = i;
-    //             out(i, j);
-    //             nextsw[hop] = j;
+            // ctrl_fnum conf
+            snprintf(fname, fname_len, "ctrl_%d", j);
+            if((fp3=fopen(fname,"a+"))==NULL)
+            {
+                printf("打开文件%s错误\n", fname);
+                return -1;
+            }
+            fprintf(fp3, "%d ", i+1);
+            fclose(fp3);
 
-    //             for(m = 0; m < hop; m++)
-    //             {
-    //                 fprintf(fp2, "%03d%03d ", nextsw[m], nextsw[m+1]);
-    //             }
-    //             fprintf(fp2, "\n");
+            // if(i != j)
+            // {
+            //     // d2c route
+            //     fprintf(fp2, "%d %d ", i, j);
+            //     hop = 0;
+            //     nextsw[hop++] = i;
+            //     out(i, j);
+            //     nextsw[hop] = j;
 
-    //             // c2d route
-    //             fprintf(fp2, "%d %d ", j, i);
-    //             hop = 0;
-    //             nextsw[hop++] = j;
-    //             out(j, i);
-    //             nextsw[hop] = i;
+            //     for(m = 0; m < hop; m++)
+            //     {
+            //         fprintf(fp2, "%03d%03d ", nextsw[m], nextsw[m+1]);
+            //     }
+            //     fprintf(fp2, "\n");
 
-    //             for(m = 0; m < hop; m++)
-    //             {
-    //                 fprintf(fp2, "%03d%03d ", nextsw[m], nextsw[m+1]);
-    //             }
-    //             fprintf(fp2, "\n");
-    //         }
-    //     }
-    // }
-    // fclose(fp1);
-    // fclose(fp2);
+            //     // c2d route
+            //     fprintf(fp2, "%d %d ", j, i);
+            //     hop = 0;
+            //     nextsw[hop++] = j;
+            //     out(j, i);
+            //     nextsw[hop] = i;
 
-    // fscanf(fp, "%d", &i);
-    // while(fscanf(fp, "%d", &i)  == 1)
-    // {
-    //     db_flag[i] = 1;
-    // }
-    // fclose(fp);
-    // snprintf(fname, fname_len, "d2d_%d", fnum);
-    // if((fp1=fopen(fname,"w"))==NULL)
-    // {
-    //     printf("打开文件%s错误\n", fname);
-    //     return -1;
-    // }
-    // for(i = 0; i < num; i++)
-    // {
-    //    if(db_flag[i] == 1)
-    //    {
-    //        fprintf(fp1, "%d\n", i);
-    //        for(j = 0; j < num; j++)
-    //        {
-    //            if(db_flag[j] == 1 && i != j)
-    //            {
-    //                 // d2d route
-    //                 // printf("db%d<->db%d route: ", i, j);
-    //                 fprintf(fp1, "%d %d ", i, j);
-    //                 hop = 0;
-    //                 nextsw[hop++] = i;
-    //                 // printf("%d ", i);
-    //                 out(i, j);
-    //                 nextsw[hop] = j;
-    //                 // printf("%d ", j);
+            //     for(m = 0; m < hop; m++)
+            //     {
+            //         fprintf(fp2, "%03d%03d ", nextsw[m], nextsw[m+1]);
+            //     }
+            //     fprintf(fp2, "\n");
+            // }
+        }
 
-    //                 for(k = 0; k < hop; k++)
-    //                 {
-    //                     // printf("sw%d-outport%d ", nextsw[k], nextsw[k+1]);
-    //                     fprintf(fp1, "%03d%03d ", nextsw[k], nextsw[k+1]);
-    //                 }
-    //                 fprintf(fp1, "\n");
-    //            }
-    //        }
-    //    }
-    // }
-    // fclose(fp1);
+        for(j = 0; j < num; j++)
+        {
+            if(i != j)
+            {
+                // d2c route
+                fprintf(fp2, "%d %d ", i, j);
+                hop = 0;
+                nextsw[hop++] = i;
+                out(i, j);
+                nextsw[hop] = j;
+
+                for(m = 0; m < hop; m++)
+                {
+                    fprintf(fp2, "%03d%03d ", nextsw[m], nextsw[m+1]);
+                }
+                fprintf(fp2, "\n");
+
+                // c2d route
+                fprintf(fp2, "%d %d ", j, i);
+                hop = 0;
+                nextsw[hop++] = j;
+                out(j, i);
+                nextsw[hop] = i;
+
+                for(m = 0; m < hop; m++)
+                {
+                    fprintf(fp2, "%03d%03d ", nextsw[m], nextsw[m+1]);
+                }
+                fprintf(fp2, "\n");
+            }
+        }
+    }
+    fclose(fp1);
+    fclose(fp2);
+
+    fscanf(fp, "%d", &i);
+    while(fscanf(fp, "%d", &i)  == 1)
+    {
+        db_flag[i] = 1;
+    }
+    fclose(fp);
+    snprintf(fname, fname_len, "d2d_%d", fnum);
+    if((fp1=fopen(fname,"w"))==NULL)
+    {
+        printf("打开文件%s错误\n", fname);
+        return -1;
+    }
+    for(i = 0; i < num; i++)
+    {
+       if(db_flag[i] == 1)
+       {
+           fprintf(fp1, "%d\n", i);
+           for(j = 0; j < num; j++)
+           {
+               if(db_flag[j] == 1 && i != j)
+               {
+                    // d2d route
+                    // printf("db%d<->db%d route: ", i, j);
+                    fprintf(fp1, "%d %d ", i, j);
+                    hop = 0;
+                    nextsw[hop++] = i;
+                    // printf("%d ", i);
+                    out(i, j);
+                    nextsw[hop] = j;
+                    // printf("%d ", j);
+
+                    for(k = 0; k < hop; k++)
+                    {
+                        // printf("sw%d-outport%d ", nextsw[k], nextsw[k+1]);
+                        fprintf(fp1, "%03d%03d ", nextsw[k], nextsw[k+1]);
+                    }
+                    fprintf(fp1, "\n");
+               }
+           }
+       }
+    }
+    fclose(fp1);
 
     return 0;
 }
