@@ -35,9 +35,13 @@ int cal(int fnum)
     float dist = 0;
     int ctrl_num = 0; // 记录控制器数量
     int db_num = 0; // 记录数据库数量
-
     int matrix[maxnum][maxnum];
     int db_flag[maxnum]; // 标记数据库所在节点
+    int db[maxnum] = {0,}; // 记录db序号
+    int flag[maxnum] = {0,}; // 标记db已经被写入ctrl文件
+    int mindist = 0;
+    int minnode = -1;
+
     memset(matrix, 0x3f, sizeof(matrix));
     memset(route, -1, sizeof(route));
     memset(db_flag, 0, sizeof(db_flag));
@@ -260,16 +264,6 @@ int cal(int fnum)
             // fclose(fp3);
             // printf("slot = %d, ctrl = %d, db = %d\n", fnum, j, i);
 
-            // ctrl_fnum conf
-            snprintf(fname, fname_len, "./ctrl_conn_db/ctrl_%d", j);
-            if((fp3=fopen(fname,"a+"))==NULL)
-            {
-                printf("打开文件%s错误\n", fname);
-                return -1;
-            }
-            fprintf(fp3, "%d ", i+1);
-            fclose(fp3);
-
             // if(i != j)
             // {
             //     // d2c route
@@ -336,9 +330,11 @@ int cal(int fnum)
     fclose(fp2);
 
     fscanf(fp, "%d", &i);
+    j = 0;
     while(fscanf(fp, "%d", &i)  == 1)
     {
         db_flag[i] = 1;
+        db[j++] = i;
     }
     fclose(fp);
     snprintf(fname, fname_len, "./route_d2d/d2d_%d", fnum);
@@ -377,6 +373,36 @@ int cal(int fnum)
        }
     }
     fclose(fp1);
+
+    // ctrl_fnum conf
+    for(i = 0; i < num; i++)
+    {
+        memset(flag, 0, sizeof(flag));
+        snprintf(fname, fname_len, "./ctrl_conn_db/ctrl_%d", i);
+        if((fp=fopen(fname,"a+"))==NULL)
+        {
+            printf("打开文件%s错误\n", fname);
+            return -1;
+        }
+
+        for(j = 0; j < db_num; j++)
+        {
+            mindist = maxdist;
+            for(k = 0; k < db_num; k++)
+            {
+                if(matrix[i][k] < mindist && flag[db[k]] != 1)
+                {
+                    mindist = matrix[i][k];
+                    minnode = k;
+                }
+            }
+            flag[db[minnode]] = 1;
+            fprintf(fp, "%d ", db[minnode]);
+        }
+        fprintf(fp, "\n");
+
+        fclose(fp);
+    }
 
     return 0;
 }
