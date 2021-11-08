@@ -393,7 +393,7 @@ int main()
    int num = 0;
    int i = 0;
 
-   snprintf(fname, fname_len, "test_0");
+   snprintf(fname, fname_len, "./test/test_0");
    if((fp=fopen(fname,"r"))==NULL)
    {
       printf("打开文件%s错误\n", fname);

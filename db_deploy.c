@@ -7,7 +7,7 @@
 #include <unistd.h> // sleep()
 // #define K 6 // database num
 #define slot_num 44
-#define fname_len 20
+#define fname_len 50
 #define maxnum 66
 #define maxdist 0x3f3f3f3f
 #define MAX 1024 // 从文件中读取的数据最大长度
@@ -67,7 +67,7 @@ int cv(int db_num)
         dist_sum = 2e9;
         optval = 2e9;
 
-        snprintf(fname, fname_len, "test_%d", m);
+        snprintf(fname, fname_len, "./test/test_%d", m);
         if((fp=fopen(fname,"r"))==NULL)
         {
             printf("打开文件%s错误\n", fname);
@@ -391,7 +391,7 @@ int cal(int db_num)
         dist_sum = 2e9;
         optval = 2e9;
 
-        snprintf(fname, fname_len, "test_%d", m);
+        snprintf(fname, fname_len, "./test/test_%d", m);
         if((fp=fopen(fname,"r"))==NULL)
         {
             printf("打开文件%s错误\n", fname);
@@ -675,7 +675,7 @@ int cal(int db_num)
 
     for(fnum = 0; fnum < slot_num; fnum++)
     {
-        snprintf(fname, fname_len, "db_%d", fnum);
+        snprintf(fname, fname_len, "./db_conn_ctrl/db_%d", fnum);
         if((fp=fopen(fname, "w"))==NULL)
         {
             printf("打开文件%s错误\n", fname);

@@ -7,7 +7,7 @@
 using namespace std;
 
 #define slot_num 44
-#define fname_len 20
+#define fname_len 50
 
 int main()
 {
@@ -23,7 +23,7 @@ int main()
         j = (i + slot_num - 1) % slot_num; // pre topo index
         pre_topo.clear();
 
-        snprintf(fname, fname_len, "test_%d", j);
+        snprintf(fname, fname_len, "./test/test_%d", j);
         if((fp1 = fopen(fname,"r"))==NULL)
         {
             printf("打开文件%s错误\n", fname);
@@ -39,14 +39,14 @@ int main()
         }
         fclose(fp1);
 
-        snprintf(fname, fname_len, "test_%d", i);
+        snprintf(fname, fname_len, "./test/test_%d", i);
         if((fp1 = fopen(fname,"r"))==NULL)
         {
             printf("打开文件%s错误\n", fname);
             return -1;
         }
         fscanf(fp1, "%d", &num);
-        snprintf(fname, fname_len, "switch_%d", i);
+        snprintf(fname, fname_len, "./switch_topo/switch_%d", i);
         if((fp2 = fopen(fname,"w"))==NULL)
         {
             printf("打开文件%s错误\n", fname);

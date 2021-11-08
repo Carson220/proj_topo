@@ -4,7 +4,7 @@
 #include <string.h>
 
 #define slot_num 44
-#define fname_len 20
+#define fname_len 50
 #define maxnum 66
 #define maxdist 0x3f3f3f3f
 
@@ -44,7 +44,7 @@ int cal(int fnum)
 
     int i, j, k, m = 0;
 
-    snprintf(fname, fname_len, "switch_%d", fnum);
+    snprintf(fname, fname_len, "./switch_topo/switch_%d", fnum);
     if((fp=fopen(fname,"r"))==NULL)
     {
         printf("打开文件%s错误\n", fname);
@@ -229,13 +229,13 @@ int cal(int fnum)
         return -1;
     }
     fscanf(fp, "%d", &db_num);
-    snprintf(fname, fname_len, "db_%d", fnum);
+    snprintf(fname, fname_len, "./db_conn_ctrl/db_%d", fnum);
     if((fp1=fopen(fname,"r"))==NULL)
     {
         printf("打开文件%s错误\n", fname);
         return -1;
     }
-    snprintf(fname, fname_len, "c2d_%d", fnum);
+    snprintf(fname, fname_len, "./route_c2d/c2d_%d", fnum);
     if((fp2=fopen(fname,"w"))==NULL)
     {
         printf("打开文件%s错误\n", fname);
@@ -261,7 +261,7 @@ int cal(int fnum)
             // printf("slot = %d, ctrl = %d, db = %d\n", fnum, j, i);
 
             // ctrl_fnum conf
-            snprintf(fname, fname_len, "ctrl_%d", j);
+            snprintf(fname, fname_len, "./ctrl_conn_db/ctrl_%d", j);
             if((fp3=fopen(fname,"a+"))==NULL)
             {
                 printf("打开文件%s错误\n", fname);
@@ -341,7 +341,7 @@ int cal(int fnum)
         db_flag[i] = 1;
     }
     fclose(fp);
-    snprintf(fname, fname_len, "d2d_%d", fnum);
+    snprintf(fname, fname_len, "./route_d2d/d2d_%d", fnum);
     if((fp1=fopen(fname,"w"))==NULL)
     {
         printf("打开文件%s错误\n", fname);
