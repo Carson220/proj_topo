@@ -385,6 +385,7 @@ int cal(int fnum)
             return -1;
         }
 
+        if(fnum == 0) fprintf(fp, "%d\n", i);
         for(j = 0; j < db_num; j++)
         {
             mindist = maxdist;
