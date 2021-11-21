@@ -391,14 +391,14 @@ int cal(int fnum)
             mindist = maxdist;
             for(k = 0; k < db_num; k++)
             {
-                if(matrix[i][k] < mindist && flag[db[k]] != 1)
+                if(matrix[i][db[k]] < mindist && flag[db[k]] != 1)
                 {
-                    mindist = matrix[i][k];
-                    minnode = k;
+                    mindist = matrix[i][db[k]];
+                    minnode = db[k];
                 }
             }
-            flag[db[minnode]] = 1;
-            fprintf(fp, "%d ", db[minnode]);
+            flag[minnode] = 1;
+            fprintf(fp, "%d ", minnode);
         }
         fprintf(fp, "\n");
 
