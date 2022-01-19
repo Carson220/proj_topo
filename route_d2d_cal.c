@@ -1,4 +1,4 @@
-// 考虑单个时间片，计算DB节点之间的路由
+// 考虑单个时间片，利用Suurballe's algorithm计算DB节点之间的路由
 
 #include <stdio.h>
 #include <string.h>
@@ -149,7 +149,7 @@ int cal(int fnum, int src, int dst)
         node_new[src][1] = 0;
         for(i = 0; i < maxnum; i++)
         {
-            if(node_new[i][0] == 0 && matrix[src][i] != maxdist)
+            if(node_new[i][0] == 0 && matrix[src][i] < maxdist)
             {
                 node_new[i][1] = matrix[src][i];
                 node_new[i][2] = src;
@@ -176,7 +176,7 @@ int cal(int fnum, int src, int dst)
             node_new[minnode][0] = 1;
             for(j = 0; j < maxnum; j++)
             {
-                if(node_new[j][0] == 0 && node_new[j][1] > matrix[minnode][j] + node_new[minnode][1] && matrix[minnode][j] != maxdist)
+                if(node_new[j][0] == 0 && node_new[j][1] > matrix[minnode][j] + node_new[minnode][1] && matrix[minnode][j] < maxdist)
                 {
                     node_new[j][1] = matrix[minnode][j] + node_new[minnode][1];
                     node_new[j][2] = minnode;
@@ -207,8 +207,6 @@ int cal(int fnum, int src, int dst)
             // printf("\n");
 
             // 比较两条路径，删除重复部分
-            // curnode = dst;
-            // prenode = node[curnode][2];
             i = 0;
             while(path[i+1] != src)
             {
@@ -234,9 +232,15 @@ int cal(int fnum, int src, int dst)
             while(curnode != dst)
             {
                 if(node[curnode][3] == -1)
+                {
                     path_1[k] = node_new[curnode][3];
+                    node_new[curnode][3] = -1;
+                }
                 else
+                {
                     path_1[k] = node[curnode][3];
+                    node[curnode][3] = -1;
+                }    
                 curnode = path_1[k];
                 k++;
             }
